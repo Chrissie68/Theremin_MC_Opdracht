@@ -1,59 +1,32 @@
-#include <Arduino.h>
-#include <avr/io.h>
-#include <avr/interrupt.h>
-#include <util/delay.h>
-#include <HardwareSerial.h>
+#include <Arduino.h>          // Needed for Serial
+#include "ultrasonic.h"       // Your sensor header
 
-
-#define TRIG PB1   // Pin 9
-#define ECHO PB0   // Pin 8
-
-void initUltrasonic(void)
+int main(void)
 {
-  // TRIG as output
-  DDRB |= (1 << TRIG);
+    init();                   // Required to initialize Arduino core (timers, etc.)
+    Serial.begin(9600);       // Enable Serial (Arduino handles UBRR setup)
+    init_ultrasonic();        // Initialize trigger pin, timer1, interrupt
 
-  // ECHO as input
-  DDRB &= ~(1 << ECHO);
-}
+    uint32_t last_trigger_time = millis();
 
-uint16_t readDistance()
-{
-  uint32_t duration = 0;
+    while (1)
+    {
+        ultrasonic_tick();    // Run state machine (send trigger, wait, etc.)
 
-  // Send 10 µs trigger pulse
-  PORTB &= ~(1 << TRIG);      // TRIG LOW
-  _delay_us(2);
-  PORTB |= (1 << TRIG);       // TRIG HIGH
-  _delay_us(10);
-  PORTB &= ~(1 << TRIG);      // TRIG LOW
+        if (millis() - last_trigger_time >= 50)
+        {
+            trigger_sensor();
+            last_trigger_time = millis();
+        }
 
-  // Wait for ECHO to go HIGH
-  while (!(PINB & (1 << ECHO)));
+        if (ultrasonic_is_distance_ready())
+        {
+            uint16_t cm = ultrasonic_get_distance_cm();
+            Serial.print("Distance: ");
+            Serial.print(cm);
+            Serial.println(" cm");
+        }
+    }
 
-  // Measure how long ECHO stays HIGH
-  while (PINB & (1 << ECHO))
-  {
-    duration++;
-    _delay_us(1);  // crude timing, 1 µs steps
-  }
-
-  // Convert to cm: duration [µs] / 58
-  return (uint16_t)(duration / 58);
-}
-
-int main()
-{
-  Serial.begin(9600);
-  initUltrasonic();
-  sei();
-
-  while (1)
-  {
-    uint16_t distance = readDistance();
-    Serial.print(distance);
-    _delay_ms(500);
-  }
-
-  return 0;
+    return 0;
 }
