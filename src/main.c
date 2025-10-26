@@ -1,13 +1,16 @@
+#include <Arduino.h>
 #include <avr/io.h>
 #include <stdio.h>
 #include <util/delay.h>
 #include "ultrasonic.h"
 #include "buzzer.h"
 
+
 #define F_CPU 16000000UL
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
-#define MAX 65
+#define MAX 60
+#define MIN 5
 
 void uart_init(void)
 {
@@ -59,9 +62,12 @@ int main(void)
             if (cm > MAX)
             {
                 cm = MAX;
+            } else if (cm < MIN)
+            {
+                cm = MIN; 
             }
 
-            uint16_t freq = fmax - ((fmax - fmin) * cm) / 65;
+            uint16_t freq = fmin + ((fmax - fmin) * (60 - cm)) / 55;
             set_buzzer_frequency(freq);
 
             char buffer[30];
