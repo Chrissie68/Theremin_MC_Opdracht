@@ -6,6 +6,7 @@
 #define F_CPU 16000000UL
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
+#define MAX 65
 
 void uart_init(void)
 {
@@ -46,11 +47,17 @@ int main(void)
             trigger_sensor();
             trigger_timer = 0;
         }
-
-        // If measurement is done, print immediately
+        
         if (ultrasonic_is_distance_ready())
         {
-            uint16_t cm = ultrasonic_get_distance_cm();
+           uint16_t cm = ultrasonic_get_distance_cm();  
+
+            if (cm > MAX)
+            {
+                cm = MAX;
+            }
+                
+
 
             char buffer[30];
             sprintf(buffer, "Distance: %u cm\r\n", cm);
