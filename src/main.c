@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <util/delay.h>
 #include "ultrasonic.h"
+#include "buzzer.h"
 
 #define F_CPU 16000000UL
 #define BAUD 9600
@@ -34,12 +35,15 @@ int main(void)
 {
     uart_init();
     init_ultrasonic();
-
+    init_buzzer();
+    sei();     
+    uint16_t fmin = 230;
+    uint16_t fmax = 1400;
     uint16_t trigger_timer = 0;
 
     while (1)
     {
-        ultrasonic_tick(); // handles trigger state machine
+        ultrasonic_tick(); 
 
         // Trigger every ~50ms
         if (++trigger_timer >= 50)
@@ -47,7 +51,7 @@ int main(void)
             trigger_sensor();
             trigger_timer = 0;
         }
-        
+
         if (ultrasonic_is_distance_ready())
         {
            uint16_t cm = ultrasonic_get_distance_cm();  
@@ -56,15 +60,16 @@ int main(void)
             {
                 cm = MAX;
             }
-                
 
+            uint16_t freq = fmax - ((fmax - fmin) * cm) / 65;
+            set_buzzer_frequency(freq);
 
             char buffer[30];
             sprintf(buffer, "Distance: %u cm\r\n", cm);
             uart_print(buffer);
         }
 
-        _delay_ms(1); // 1ms tick
+        _delay_ms(1); 
     }
 
     return 0;
