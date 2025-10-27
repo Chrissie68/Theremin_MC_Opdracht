@@ -1,3 +1,4 @@
+// buzzer.c
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
@@ -19,7 +20,7 @@ void init_buzzer(void)
     OCR2B = 0;                                   // Start with volume = 0
     TIMSK2 = 0;                                  // No Timer2 interrupts
 
-    // --- Timer0: CTC mode to control the pitch
+    // --- Timer0: CTC mode to control the pitch toggling (modulation)
     TCCR0A = (1 << WGM01);                       // CTC mode
     TCCR0B = (1 << CS02);                        // Prescaler = 256
     TIMSK0 = (1 << OCIE0A);                      // Enable compare match interrupt
@@ -30,7 +31,7 @@ void set_buzzer_frequency(uint16_t freq)
     if (freq < 1) freq = 1;
     if (freq > 2000) freq = 2000;
 
-    // Calculate OCR0A for CTC timer: f = F_CPU / (2 * prescaler * (1 + OCR0A))
+    // Calculate OCR0A for Timer0 (CTC tone generator)
     uint32_t ocr_val = (F_CPU / (2UL * 256 * freq)) - 1;
 
     if (ocr_val > 255)

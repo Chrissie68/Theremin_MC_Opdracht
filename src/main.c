@@ -6,11 +6,11 @@
 #include "buzzer.h"
 #include "adc.h"
 
-#define F_CPU 8000000UL
+#define F_CPU 16000000UL
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
-#define MAX 60
-#define MIN 5
+#define MAX_CM 60
+#define MIN_CM 5
 
 void uart_init(void)
 {
@@ -60,24 +60,25 @@ int main(void)
         if (ultrasonic_is_distance_ready())
         {
             uint16_t cm = ultrasonic_get_distance_cm();
-            if (cm > MAX)       cm = MAX;
-            else if (cm < MIN)  cm = MIN;
+            if (cm > MAX_CM)       cm = MAX_CM;
+            else if (cm < MIN_CM)  cm = MIN_CM;
 
             // Map distance to frequency
-            uint16_t freq = fmin + ((fmax - fmin) * (MAX - cm)) / (MAX - MIN);
+            uint16_t freq = fmin + ((fmax - fmin) * (MAX_CM - cm)) / (MAX_CM - MIN_CM);
             set_buzzer_frequency(freq);
 
             // Set volume from potmeter (0–255)
             //uint8_t pot = get_pot_value();
 
             static uint8_t last_pot = 255;
-uint8_t pot = get_pot_value();
-if (pot != last_pot) {
-    char buf[20];
-    sprintf(buf, "POT: %u\r\n", pot);
-    uart_print(buf);
-    last_pot = pot;
-}
+            uint8_t pot = get_pot_value();
+            if (pot != last_pot) 
+            {
+            char buf[20];
+            sprintf(buf, "POT: %u\r\n", pot);
+            uart_print(buf);
+            last_pot = pot;
+            }
 
             set_buzzer_volume(pot);
 
