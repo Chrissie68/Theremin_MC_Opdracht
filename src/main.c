@@ -5,12 +5,11 @@
 #include "ultrasonic.h"
 #include "buzzer.h"
 
-
 #define F_CPU 16000000UL
 #define BAUD 9600
 #define MYUBRR F_CPU/16/BAUD-1
-#define MAX 60
-#define MIN 5
+#define MAX_CM 60
+#define MIN_CM 5
 
 void uart_init(void)
 {
@@ -38,17 +37,18 @@ int main(void)
 {
     uart_init();
     init_ultrasonic();
-    init_buzzer();
-    sei();     
-    uint16_t fmin = 230;
-    uint16_t fmax = 1400;
+    init_buzzer(); // Also initializes ADC now
+    sei();          // Enable global interrupts
+
+    const uint16_t fmin = 230;
+    const uint16_t fmax = 1400;
     uint16_t trigger_timer = 0;
 
     while (1)
     {
-        ultrasonic_tick(); 
+        ultrasonic_tick();
 
-        // Trigger every ~50ms
+        // Trigger ultrasonic sensor every ~50ms
         if (++trigger_timer >= 50)
         {
             trigger_sensor();
@@ -57,28 +57,30 @@ int main(void)
 
         if (ultrasonic_is_distance_ready())
         {
-           uint16_t cm = ultrasonic_get_distance_cm();  
+            uint16_t cm = ultrasonic_get_distance_cm();
+            if (cm > MAX_CM)       cm = MAX_CM;
+            else if (cm < MIN_CM)  cm = MIN_CM;
 
-            if (cm > MAX)
-            {
-                cm = MAX;
-            } else if (cm < MIN)
-            {
-                cm = MIN; 
-            }
-
-            uint16_t freq = fmin + ((fmax - fmin) * (60 - cm)) / 55;
+            // Convert distance to frequency
+            uint16_t freq = fmin + ((fmax - fmin) * (MAX_CM - cm)) / (MAX_CM - MIN_CM);
             set_buzzer_frequency(freq);
 
-            char buffer[30];
-            sprintf(buffer, "Distance: %u cm\r\n", cm);
+            // Read volume from potmeter
+            set_buzzer_volume(get_pot_value());
+
+            // Optional: serial debugging
+            /*
+            char buffer[50];
+            sprintf(buffer, "Distance: %u cm  Frequency: %u Hz  Volume: %u\r\n", cm, freq, get_pot_value());
             uart_print(buffer);
+            */
         }
 
-        _delay_ms(1); 
+        _delay_ms(1);
     }
 
     return 0;
 }
+
 
 
