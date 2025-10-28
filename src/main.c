@@ -14,7 +14,7 @@
 #define LCD_ADDR 0x27
 #define SEG7_ADDR 0x21
 
-static volatile uint8_t filter_size = 5;  
+static volatile uint8_t filter_size = 1;  
 static const uint8_t MIN_FILTER = 1;
 static const uint8_t MAX_FILTER = 15;
 volatile bool update_seg7 = false;
@@ -104,6 +104,9 @@ int main(void)
     const uint16_t fmin = 230;
     const uint16_t fmax = 1400;
     uint16_t trigger_timer = 0;
+    uint16_t cm = 0;
+    uint16_t freq = 0;
+    uint16_t filtered_cm = 0;
 
     while (1)
     {
@@ -121,16 +124,13 @@ int main(void)
 
         if (ultrasonic_is_distance_ready())
         {
-            uint16_t cm = ultrasonic_get_distance_cm();
+            cm = ultrasonic_get_distance_cm();
             if (cm > MAX_CM) cm = MAX_CM;
             else if (cm < MIN_CM) cm = MIN_CM;
 
-            uint16_t freq = fmin + ((fmax - fmin) * (MAX_CM - cm)) / (MAX_CM - MIN_CM);
+            filtered_cm = apply_median_filter(cm);
+            freq = fmin + ((fmax - fmin) * (MAX_CM - filtered_cm)) / (MAX_CM - MIN_CM);
             set_buzzer_frequency(freq);
-
-            uint8_t raw = get_pot_value();
-            uint8_t filtered = apply_median_filter(raw);
-            set_buzzer_volume(filtered);
 
             // LCD
             char line1[17], line2[17];
@@ -145,7 +145,7 @@ int main(void)
             seg7_display_hex(filter_size);
         }
 
-        _delay_ms(1);
+
     }
 
     return 0;
