@@ -14,15 +14,10 @@
 #define LCD_ADDR 0x27
 #define SEG7_ADDR 0x21
 
-// Globals
 static volatile uint8_t filter_size = 5;  
 static const uint8_t MIN_FILTER = 1;
 static const uint8_t MAX_FILTER = 15;
 volatile bool update_seg7 = false;
-
-uint8_t get_filter_size() {
-    return filter_size;
-}
 
 ISR(PCINT2_vect)
 {
@@ -50,17 +45,17 @@ ISR(PCINT2_vect)
 
 void init_filter_buttons()
 {
-    // Set PD2 and PD5 as input with pull-up
+    // PD2 en PD5 als input met pull-up aanzetten
     DDRD &= ~((1 << DDD2) | (1 << DDD5));
-    PORTD |= (1 << PORTD2) | (1 << PORTD5); // Enable internal pull-ups
+    PORTD |= (1 << PORTD2) | (1 << PORTD5);
 
-    // Enable pin change interrupt group for PORTD (PCINT[23:16])
+    // interrupt aanzetten voor PORTD
     PCICR |= (1 << PCIE2);
 
-    // Enable pin change interrupts for PD2 (PCINT18) and PD5 (PCINT21)
+    //pin change interrupts aanzetten voor PD2 (PCINT18) en PD5 (PCINT21)
     PCMSK2 |= (1 << PCINT18) | (1 << PCINT21);
 
-    // Initial 7-segment display
+    //1 weergeven bij startup
     seg7_display_hex(filter_size);
 }
 
@@ -99,7 +94,7 @@ uint8_t apply_median_filter(uint8_t new_value)
 int main(void)
 {
     init_ultrasonic();
-    init_buzzer();          // Also starts ADC
+    init_buzzer();          
     init_filter_buttons();
     seg7_init();
     HD44780_PCF8574_Init(LCD_ADDR);

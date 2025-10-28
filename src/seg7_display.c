@@ -2,7 +2,7 @@
 #include "twi.h"
 
 
-#define SEG7_PCF_ADDR 0x21
+#define SEG7_ADDR 0x21
 
 
 // Segment bit order (A to G): 0=A, 1=B, 2=C, 3=D, 4=E, 5=F, 6=G
@@ -40,7 +40,7 @@ void seg7_display_hex(uint8_t val) {
     uint8_t output = ~segments;
 
     TWI_MT_Start();
-    TWI_Transmit_SLAW(SEG7_PCF_ADDR);
+    TWI_Transmit_SLAW(SEG7_ADDR);
     TWI_Transmit_Byte(output);
     TWI_Stop();
 }
