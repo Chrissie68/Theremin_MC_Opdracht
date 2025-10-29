@@ -10,8 +10,7 @@
 #include "twi.h"
 
 #define LCD_ADDR    0x27 // I2C-adres van het LCD scherm
-#define MAX_CM      60 // Maximale meetafstand in cm
-#define MIN_CM      5 // Minimale meetafstand in cm
+#define MAX_CM      65 // Maximale meetafstand in cm
 #define MAX_FILTER  15 // Maximale filtergrootte
 #define MIN_FILTER  1 // Minimale filtergrootte
 #define MIN_FREQ    230 // Minimale toonfrequentie in Hz
@@ -155,14 +154,14 @@ int main(void)
             if(cm > MAX_CM)
             {
                 cm = MAX_CM;
-            } else if(cm < MIN_CM)
+            } else if(cm < 0)
             {
-                cm = MIN_CM;
+                cm = 0;
             }
             // Mediaan filter toepassen
             filtered_cm = mediaan_filter(cm);
-            // Frequentie berekenen op basis van gefilterde afstand(Formule staat in TO, hierbij word ook nog rekening gehouden met min en max afstand) 
-            freq = MIN_FREQ + ((MAX_FREQ - MIN_FREQ) * (MAX_CM - filtered_cm)) / (MAX_CM - MIN_CM);
+            // Frequentie berekenen op basis van gefilterde afstand(Formule staat in TO) 
+            freq = MAX_FREQ - ((MAX_FREQ - MIN_FREQ) * (MAX_CM - filtered_cm)) / MAX_CM;
 
             // Volume uitlezen en instellen
             volume = get_pot_value();
