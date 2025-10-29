@@ -107,6 +107,7 @@ int main(void)
     uint16_t cm = 0;
     uint16_t freq = 0;
     uint16_t filtered_cm = 0;
+    uint16_t volume = 0;
 
     while (1)
     {
@@ -128,7 +129,11 @@ int main(void)
             if (cm > MAX_CM) cm = MAX_CM;
             else if (cm < MIN_CM) cm = MIN_CM;
 
+            volume = get_pot_value();
+            set_buzzer_volume(volume);
+
             filtered_cm = apply_median_filter(cm);
+            
             freq = fmin + ((fmax - fmin) * (MAX_CM - filtered_cm)) / (MAX_CM - MIN_CM);
             set_buzzer_frequency(freq);
 
