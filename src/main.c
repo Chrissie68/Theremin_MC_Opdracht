@@ -13,10 +13,10 @@
 #define MIN_CM 5
 #define LCD_ADDR 0x27
 #define SEG7_ADDR 0x21
+#define MAX_FILTER 15
 
 static volatile uint8_t filter_size = 1;  
 static const uint8_t MIN_FILTER = 1;
-static const uint8_t MAX_FILTER = 15;
 volatile bool update_seg7 = false;
 
 ISR(PCINT2_vect)
@@ -46,6 +46,7 @@ ISR(PCINT2_vect)
 void init_filter_buttons()
 {
     // PD2 en PD5 als input met pull-up aanzetten
+    // ik gebruik pin2 omdat pin 4 niet werkte voor mij, het is een hardware probleem maar aangezien de tijd, heb ik besloten om een andere pin te gebruiken.
     DDRD &= ~((1 << DDD2) | (1 << DDD5));
     PORTD |= (1 << PORTD2) | (1 << PORTD5);
 
@@ -60,8 +61,8 @@ void init_filter_buttons()
 }
 
 
-// Median filter
-#define MAX_FILTER 15
+// Mediaan filter
+
 struct ValueEntry { uint8_t age, value; };
 struct ValueEntry buffer[MAX_FILTER];
 
