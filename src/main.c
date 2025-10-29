@@ -154,10 +154,7 @@ int main(void)
             if(cm > MAX_CM)
             {
                 cm = MAX_CM;
-            } else if(cm < 0)
-            {
-                cm = 0;
-            }
+            } 
             // Mediaan filter toepassen
             filtered_cm = mediaan_filter(cm);
             // Frequentie berekenen op basis van gefilterde afstand(Formule staat in TO) 
