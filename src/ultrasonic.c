@@ -119,7 +119,7 @@ ISR(TIMER1_CAPT_vect)
 
         // Afstand berekenen (formule: afstand(cm) = tijd(µs) / 58)
         // 1 tick = 0.5 µs (2 MHz timer)
-        distance_cm = (pulse_width / 2) / 58;
+        distance_cm = pulse_width / 58;
 
         // Resultaat beschikbaar maken voor main-loop
         distance_ready = true;
