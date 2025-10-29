@@ -1,9 +1,7 @@
 #include <avr/io.h>
 #include "twi.h"
 
-
-#define SEG7_ADDR 0x21
-
+#define SEG7_ADDR 0x21 // I2C-adres van het 7-segment display
 
 // Segment bit order (A to G): 0=A, 1=B, 2=C, 3=D, 4=E, 5=F, 6=G
 const uint8_t seg7_hex_map[15] = {
@@ -24,19 +22,18 @@ const uint8_t seg7_hex_map[15] = {
 0b1110001 // F
 };
 
+// Toon een hexadecimaal nummer (1-15) op het 7-segment display
+void seg7_display_hex(uint8_t nummer) {
+    if (nummer < 1)
+    { 
+        nummer = 1;
+    }
+    else if (nummer > 15)
+    {
+       nummer = 15; 
+    } 
 
-void seg7_init(void) {
-TWI_Init(); // Make sure TWI is initialized once globally
-}
-
-
-void seg7_display_hex(uint8_t val) {
-    if (val < 1) val = 1;
-    else if (val > 15) val = 15;
-
-    uint8_t segments = seg7_hex_map[val - 1]; // fix index!
-
-    // PCF8574 is active LOW → invert bits
+    uint8_t segments = seg7_hex_map[nummer - 1]; 
     uint8_t output = ~segments;
 
     TWI_MT_Start();
