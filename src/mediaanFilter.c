@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <avr/interrupt.h>
 #include <string.h>
+#include <stdlib.h>
 #include <seg7_display.h>
 
 #define MAX_FILTER  15 // Maximale filtergrootte
