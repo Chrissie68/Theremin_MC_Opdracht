@@ -1,8 +1,8 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 
-static uint8_t pwm_enabled = 1;
-static volatile uint8_t pot_value = 0;
+static uint8_t pwmEnabled = 1;
+static volatile uint8_t potWaarde = 0;
 
 // Initialize buzzer timers and ADC for volume control
 void init_buzzer(void)
@@ -34,11 +34,11 @@ void set_buzzer_frequency(uint16_t freq)
     if (freq > 2000) freq = 2000;
 
     // f = F_CPU / (2 * prescaler * (1 + OCR0A))
-    uint32_t ocr_val = (F_CPU / (2UL * 256 * freq)) - 1;
-    if (ocr_val > 255)
-        ocr_val = 255;
+    uint32_t ocrWaarde = (F_CPU / (2UL * 256 * freq)) - 1;
+    if (ocrWaarde > 255)
+        ocrWaarde = 255;
 
-    OCR0A = (uint8_t)ocr_val;
+    OCR0A = (uint8_t)ocrWaarde;
 }
 
 // volume instellen
@@ -49,26 +49,26 @@ void set_buzzer_volume(uint8_t volume)
 
 uint8_t get_pot_value(void)
 {
-    return pot_value;
+    return potWaarde;
 }
 
 ISR(ADC_vect)
 {
-    pot_value = ADCH;
+    potWaarde = ADCH;
 }
 
 // --- Timer0 compare match ISR: toggle PWM on/off (tone on/off) ---
 ISR(TIMER0_COMPA_vect)
 {
-    if (pwm_enabled)
+    if (pwmEnabled)
     {
         TCCR2A &= ~(1 << COM2B1); // Disable output
-        pwm_enabled = 0;
+        pwmEnabled = 0;
     }
     else
     {
         TCCR2A |= (1 << COM2B1);  // Enable output
-        pwm_enabled = 1;
+        pwmEnabled = 1;
     }
 }
 
